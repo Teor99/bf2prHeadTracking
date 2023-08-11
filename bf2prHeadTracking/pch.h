@@ -15,4 +15,6 @@
 
 #include "detours.h"
 
+#include <stdio.h>
+
 #endif //PCH_H
