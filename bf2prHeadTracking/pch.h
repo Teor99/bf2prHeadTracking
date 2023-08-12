@@ -12,9 +12,16 @@
 
 #include <d3d9.h>
 #include <d3dx9.h>
-
 #include "detours.h"
-
 #include <stdio.h>
+
+#include <thread>
+#include <string>
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <format>
+
+#include "udp_server.h"
+
 
 #endif //PCH_H

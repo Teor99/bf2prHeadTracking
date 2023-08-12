@@ -10,12 +10,19 @@
 
 typedef void* (__fastcall CameraManipulationFunction)(AirVehicle*, DWORD, DWORD, astruct*, DWORD, DWORD);
 CameraManipulationFunction* origCameraManipulationFunction = NULL;
-AirVehicle* lastAirVehicle = NULL;
+AirVehicle* lastAirVehiclePtr = NULL;
 wchar_t msgbuf[1024] = {};
 
+extern struct CameraCoordsPacket cc;
+
+float mapYawAngleToXpos(float yaw, float minYawAngle, float maxYawAngle, float minXpos, float maxXpos)
+{
+    return (yaw - minYawAngle) * (maxXpos - minXpos) / (maxYawAngle - minYawAngle) + minXpos;
+}
+
 void headMovingHandlerInAirVehicle(AirVehicle* pAirVehicle) {
-    if (lastAirVehicle != pAirVehicle) {
-        swprintf(msgbuf, sizeof(msgbuf), L"last airVehicle ptr: %p, new airVehicle ptr: %p\n", lastAirVehicle, pAirVehicle);
+    if (lastAirVehiclePtr != pAirVehicle) {
+        swprintf(msgbuf, sizeof(msgbuf), L"last airVehicle ptr: %p, new airVehicle ptr: %p\n", lastAirVehiclePtr, pAirVehicle);
         OutputDebugString(msgbuf);
         swprintf(msgbuf, sizeof(msgbuf), L"ptr to head position matrix: %p\n", pAirVehicle->pHeadMatrix);
         OutputDebugString(msgbuf);
@@ -27,7 +34,33 @@ void headMovingHandlerInAirVehicle(AirVehicle* pAirVehicle) {
                     m->_41, m->_42, m->_43, m->_44);
         OutputDebugString(msgbuf);
 
-        lastAirVehicle = pAirVehicle;
+        lastAirVehiclePtr = pAirVehicle;
+    }
+
+    D3DXMATRIX rotationMatrix;
+    D3DXMatrixIdentity(&rotationMatrix);
+    D3DXMatrixRotationYawPitchRoll(&rotationMatrix, D3DXToRadian(cc.yaw), D3DXToRadian(-cc.pitch), D3DXToRadian(cc.roll));
+
+    D3DXMATRIX* m = (D3DXMATRIX*)pAirVehicle->pHeadMatrix;
+
+    m->_11 = rotationMatrix._11;
+    m->_12 = rotationMatrix._12;
+    m->_13 = rotationMatrix._13;
+
+    m->_21 = rotationMatrix._21;
+    m->_22 = rotationMatrix._22;
+    m->_23 = rotationMatrix._23;
+
+    m->_31 = rotationMatrix._31;
+    m->_32 = rotationMatrix._32;
+    m->_33 = rotationMatrix._33;
+
+    if (cc.yaw <= -20.0) {
+        m->_41 = mapYawAngleToXpos(cc.yaw, -179.0f, -20.0f, -0.35f, 0.0f);
+    } else if (cc.yaw >= 20.0) {
+        m->_41 = mapYawAngleToXpos(cc.yaw, 20.0f, 179.0f, 0.0f, 0.35f);
+    } else {
+        m->_41 = 0.0f;
     }
 }
 
@@ -55,6 +88,8 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
     }
 
     if (dwReason == DLL_PROCESS_ATTACH) {
+        CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)udpServer, NULL, 0, NULL);
+
         origCameraManipulationFunction = (CameraManipulationFunction*)getAddressRelativeToModule(L"PRBF2.exe", 0x1A3530);
 
         DetourRestoreAfterWith();
@@ -68,6 +103,8 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
         DetourUpdateThread(GetCurrentThread());
         DetourDetach(&(PVOID&)origCameraManipulationFunction, myCameraManipulationFunction);
         DetourTransactionCommit();
+        stopUdpServer();
+        Sleep(1000);
     }
 
     return TRUE;
