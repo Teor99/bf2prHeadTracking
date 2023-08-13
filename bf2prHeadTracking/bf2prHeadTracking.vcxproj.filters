@@ -42,4 +42,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="inject.bat">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="eject.bat">
+      <Filter>Source Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>
