@@ -3,7 +3,7 @@
 typedef unsigned char   undefined;
 typedef unsigned int    undefined4;
 
-struct struct1 {
+struct CameraTemplate {
     undefined field0_0x0;
     undefined field1_0x1;
     undefined field2_0x2;
@@ -744,10 +744,10 @@ struct struct1 {
     undefined field737_0x2e1;
     undefined field738_0x2e2;
     undefined field739_0x2e3;
-    undefined field740_0x2e4;
+    undefined toggleMouseLook;
 };
 
-struct AirVehicle { /* PlaceHolder Class Structure */
+struct Camera { /* PlaceHolder Class Structure */
     undefined field0_0x0;
     undefined field1_0x1;
     undefined field2_0x2;
@@ -768,7 +768,7 @@ struct AirVehicle { /* PlaceHolder Class Structure */
     undefined field17_0x11;
     undefined field18_0x12;
     undefined field19_0x13;
-    struct struct1 * field20_0x14;
+    struct CameraTemplate * pCameraTemplate;
     undefined field21_0x18;
     undefined field22_0x19;
     undefined field23_0x1a;
@@ -949,7 +949,7 @@ struct AirVehicle { /* PlaceHolder Class Structure */
     undefined field198_0xc9;
     undefined field199_0xca;
     undefined field200_0xcb;
-    void * pHeadMatrix;
+    D3DXMATRIX* pHeadMatrix;
     undefined field202_0xd0;
     undefined field203_0xd1;
     undefined field204_0xd2;
